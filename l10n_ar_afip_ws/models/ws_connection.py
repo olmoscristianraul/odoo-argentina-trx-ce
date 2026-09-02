@@ -231,7 +231,7 @@ class L10nArAfipWsConnection(models.Model):
         )
 
         def _sign_cms(message_bytes):
-            return cert._l10n_ar_pkcs7_sign(message_bytes)
+            return cert.sudo()._l10n_ar_pkcs7_sign(message_bytes)
 
         # OJO: `self.ws` es la KEY del Selection (descriptiva, p.ej.
         # `ws_sr_constancia_inscripcion`), pero el nombre técnico que
@@ -275,7 +275,9 @@ class L10nArAfipWsConnection(models.Model):
         (campo `l10n_ar_afip_ws_environment` + `l10n_ar_afip_ws_cert_id`).
         """
         self.ensure_one()
-        cert = self.company_id.l10n_ar_afip_ws_cert_id
+        # sudo(): `certificate.certificate` / `certificate.key` solo son
+        # legibles por base.group_system; el usuario que factura no lo es.
+        cert = self.company_id.sudo().l10n_ar_afip_ws_cert_id
         if not cert:
             raise UserError(_(
                 "La empresa %s no tiene un certificado AFIP configurado. "

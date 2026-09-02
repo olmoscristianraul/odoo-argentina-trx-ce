@@ -31,7 +31,19 @@ class AccountJournal(models.Model):
     # hook de emisión: solo disparamos CAE en journals cuyo `pos_system`
     # esté en esta tupla. Otros sistemas AFIP (export, bond, ctrl fiscal)
     # llegarán en fases posteriores con sus propios módulos.
-    _L10N_AR_WSFE_POS_SYSTEMS = ("RLI_RLM",)
+    #
+    # `RAW_MAW` es el código de ARCA para "Factura Electrónica - Web Service"
+    # y es EL valor habitual de los puntos de venta que emiten por WSFEv1.
+    # Faltaba en esta tupla: los journals con RAW_MAW devolvían None en
+    # `_l10n_ar_afip_ws_for_emission`, el hook de `_post()` los salteaba con
+    # un `continue` silencioso y las facturas quedaban posteadas SIN CAE, sin
+    # error visible para el operador. Referencia de Odoo
+    # (l10n_ar_edi/models/account_journal.py):
+    #     res.insert(0, ('RAW_MAW', _('Electronic Invoice - Web Service')))
+    #     type_mapping = {'RAW_MAW': 'wsfe', 'FEEWS': 'wsfex', 'BFEWS': 'wsbfe'}
+    # `RLI_RLM` (Online Invoice / comprobantes en línea) se conserva por
+    # compatibilidad con las instalaciones que ya lo tenían configurado.
+    _L10N_AR_WSFE_POS_SYSTEMS = ("RAW_MAW", "RLI_RLM")
 
     # WSFEXv1 POS systems — Factura Electrónica de Exportación. Implementado
     # 2026-04-27 en l10n_ar_edi (Fase 4 — facturas E).

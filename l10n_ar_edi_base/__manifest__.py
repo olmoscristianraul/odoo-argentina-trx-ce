@@ -1,7 +1,7 @@
 # Part of l10n-ar-edi-community. See LICENSE file for full copyright and licensing details.
 {
     "name": "Argentina EDI — Base",
-    "version": "19.0.0.2.0",
+    "version": "19.0.0.3.0",
     "category": "Accounting/Localizations/EDI",
     "summary": "Campos y modelos base para facturación electrónica AR en Odoo Community",
     "description": """
