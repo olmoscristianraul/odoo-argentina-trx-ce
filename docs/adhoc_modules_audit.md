@@ -38,7 +38,7 @@ De los 77 repos públicos de la org, estos son los que pegan con AR / contabilid
 
 Notas sobre las branches:
 
-- `odoo-argentina` 19.0 es **muy delgada** ahora — sólo 7 módulos. La mayor parte del peso histórico pasó a Odoo Community core (`l10n_ar`, `l10n_ar_edi`, `l10n_ar_withholding`).
+- `odoo-argentina` 19.0 es **muy delgada** ahora — sólo 7 módulos. La mayor parte del peso histórico pasó a Odoo core (`l10n_ar`, `l10n_ar_withholding` en Community; `l10n_ar_edi` en Enterprise).
 - `odoo-argentina-ee` PÚBLICO con licencia AGPL-3 — adhoc lo mantiene abierto pero las funciones que ofrece sólo corren si tenés Odoo Enterprise instalado.
 - `account-payment` 19.0 **ya no contiene** los `l10n_ar_account_withholding` históricos de la versión 13/14. La lógica migró a Odoo CE (`l10n_ar_withholding`) y al `l10n_ar_tax` que está en `odoo-argentina`.
 
@@ -69,7 +69,7 @@ Los 4 módulos que adhoc reimplementa porque sólo existen en Odoo Enterprise:
 | `l10n_ar_pos_afipws_fe` | — | AGPL-3 | ❓ probable installable=False | POS + factura electrónica AFIP por `pyafipws` | ❌ no lo necesitamos |
 | `l10n_ar_reports` | 16.0.1.0.0 | AGPL-3 | ⚠️ `installable=False` | Account VAT report XLSX (versión vieja). Manifest 16.0 sin migrar. | ❌ Nosotros tenemos `l10n_ar_libro_iva_digital` (TXT AFIP) + `l10n_ar_iva_simple` (CSV ARCA) |
 
-**Veredicto:** `odoo-argentina-ce` 19.0 está **abandonado** — todos los módulos siguen con manifest 16.0/18.0 e `installable=False`. La cobertura que ofrecía la heredó Odoo 19 Community con `l10n_ar_edi` (factura electrónica oficial).
+**Veredicto:** `odoo-argentina-ce` 19.0 está **abandonado** — todos los módulos siguen con manifest 16.0/18.0 e `installable=False`. La cobertura que ofrecía la heredó Odoo 19 Community con `l10n_ar_edi` (Odoo Enterprise) (factura electrónica oficial).
 
 ---
 
@@ -87,10 +87,10 @@ Repos AGPL-3 públicos que dependen de Odoo Enterprise (`accountant`, `account_r
 | `l10n_ar_account_reports_backward_comp` | — | AGPL-3 | `l10n_ar_account_reports` | Compat hacia atrás | ❌ |
 | `l10n_ar_account_tax_settlement_mendoza` | — | AGPL-3 | `l10n_ar_account_reports` | Liquidación impositiva Mendoza | ⚪ provincial específico |
 | **`l10n_ar_arba_ws`** ⭐⭐⭐ | 19.0.1.3.0 | AGPL-3 | `l10n_ar_tax`, `l10n_ar_edi` | **"ARBA Webservice (A122R)"** — el cliente que veníamos por escribir. Trae: `data/ir_cron_data.xml`, `views/l10n_ar_dj_arba_views.xml` (DDJJ ARBA), `views/account_payment_views.xml`, `views/l10n_ar_payment_withholding_views.xml`, `wizard/arba_withholding_draft_warning_views.xml`. **No requiere Enterprise** (sólo depende de `l10n_ar_tax` que es Community). | 🔴 **EXACTO match con la spec del WS A122R que documentamos** |
-| `l10n_ar_currency_update` | 19.0.1.1.0 | AGPL-3 | `currency_rate_live`, `l10n_ar_edi` | Cron actualización divisas AR (BNA mayorista) | 🟢 overlap con nuestros crons de cotización |
-| `l10n_ar_edi_payment_pro` | — | AGPL-3 | `l10n_ar_edi`, `account_payment_pro` | Bridge factura electrónica + pago avanzado | 🟢 backlog |
-| `l10n_ar_edi_ux` | — | AGPL-3 | `l10n_ar_edi` | UX adicional sobre `l10n_ar_edi` | 🟢 evaluar overlap |
-| `l10n_ar_import_bill` | 19.0.1.4.0 | AGPL-3 | `account_accountant`, `l10n_ar_edi`, `account_invoice_tax`, `account_balance_import` | **"Argentinian Importing Bills from ARCA"** — wizard import de facturas recibidas desde Mis Comprobantes ARCA. **Requiere EE** (`account_accountant`). | 🔴 overlap directo con nuestro `l10n_ar_mis_comprobantes` — el nuestro es CE-puro |
+| `l10n_ar_currency_update` | 19.0.1.1.0 | AGPL-3 | `currency_rate_live`, `l10n_ar_edi` (Odoo Enterprise) | Cron actualización divisas AR (BNA mayorista) | 🟢 overlap con nuestros crons de cotización |
+| `l10n_ar_edi_payment_pro` | — | AGPL-3 | `l10n_ar_edi` (Odoo Enterprise), `account_payment_pro` | Bridge factura electrónica + pago avanzado | 🟢 backlog |
+| `l10n_ar_edi_ux` | — | AGPL-3 | `l10n_ar_edi` (Odoo Enterprise) | UX adicional sobre `l10n_ar_edi` | 🟢 evaluar overlap |
+| `l10n_ar_import_bill` | 19.0.1.4.0 | AGPL-3 | `account_accountant`, `l10n_ar_edi` (Odoo Enterprise), `account_invoice_tax`, `account_balance_import` | **"Argentinian Importing Bills from ARCA"** — wizard import de facturas recibidas desde Mis Comprobantes ARCA. **Requiere EE** (`account_accountant`). | 🔴 overlap directo con nuestro `l10n_ar_mis_comprobantes` — el nuestro es CE-puro |
 | `l10n_ar_txt_sire` | 18.0.1.0.0 | LGPL-3 | `l10n_ar_account_reports`, `l10n_ar_tax` | Export TXT Régimen SIRE (Sistema Integral de Retenciones Electrónicas) | 🟢 candidato fork — único con LGPL-3 en este repo |
 
 ---
@@ -167,7 +167,7 @@ Sin módulos de withholding directos en 19.0 — toda esa lógica migró. Pero s
                   ┌────────────────────────────────────────────┐
                   │  Odoo 19 Community (LGPL-3, oficial)       │
                   │  · l10n_ar              (locale base AR)   │
-                  │  · l10n_ar_edi          (factura electr.)  │
+                  │  · l10n_ar_edi (Enterprise) (factura electr.)  │
                   │  · l10n_ar_withholding  (motor retenciones)│ ← AQUÍ ESTÁ LA BASE
                   │  · l10n_latam_check                        │
                   │  · l10n_latam_invoice_document             │
@@ -199,7 +199,7 @@ Sin módulos de withholding directos en 19.0 — toda esa lógica migró. Pero s
 
 | Funcionalidad | Lo cubre adhoc con… | Lo cubre `l10n_ar_trixocom` con… | ¿Conflicto? |
 |---|---|---|---|
-| Factura electrónica (WSFEv1/WSFEX/WSCDC) | `l10n_ar_edi` (Odoo CE oficial) + `l10n_ar_afipws_fe` (deprecado) | `l10n_ar_afip_ws` propio (cliente requests + WSAA propio) | 🟡 doble engine — hay que elegir cuál usa el cliente |
+| Factura electrónica (WSFEv1/WSFEX/WSCDC) | `l10n_ar_edi` (Odoo Enterprise) + `l10n_ar_afipws_fe` (deprecado) | `l10n_ar_afip_ws` propio (cliente requests + WSAA propio) | 🟡 doble engine — hay que elegir cuál usa el cliente |
 | CAEA | nada en adhoc 19.0 | `l10n_ar_caea` propio | ✅ exclusivo nuestro |
 | Padrones IIBB (ARBA, AGIP, SF, CBA) — **percepciones** | `l10n_ar_tax` con `res_company_jurisdiction_padron` | `l10n_ar_iibb_percepciones` + 4 módulos provinciales + `l10n_ar_padron_base` | 🔴 doble engine de padrones (potencialmente conflictivo) |
 | Retenciones IIBB ARBA (A122R) | **`l10n_ar_arba_ws`** | ⚪ no implementado (gap reconocido) | ✅ adhoc lo cubre |
