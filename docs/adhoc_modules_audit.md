@@ -54,7 +54,7 @@ Notas sobre las branches:
 | **`l10n_ar_tax`** ⭐ | 19.0.1.16.0 | AGPL-3 | `l10n_ar`, `l10n_ar_ux`, `l10n_ar_withholding`, `account_payment_pro`, `l10n_latam_check` | **"Automatic Argentinian Withholdings on Payments"** — auto-aplicación de retenciones según padrón provincial, fiscal position, y `arba_request`. Trae views: `arba_request.xml`, `res_company_jurisdiction_padron_view.xml`, `l10n_ar_payment_withholding_views.xml`. | 🔴 **clave para A122R / withholding** |
 | `l10n_ar_tax_backward_compatibility` | — | AGPL-3 | `l10n_ar_tax` | Compat con instalaciones que vienen de versiones viejas | 🟡 sólo si migran de 13/14 |
 | `l10n_ar_tax_python` | — | AGPL-3 | `l10n_ar_tax` | Python-eval de impuestos (cálculo dinámico %) | 🟢 backlog útil |
-| `l10n_ar_ux` | 19.0.1.8.0 | AGPL-3 | `l10n_ar`, `account_internal_transfer` | UX accounting: tags, fiscal position, transfer report, debit note view | 🟢 leve overlap con nuestro `l10n_ar_edi` |
+| `l10n_ar_ux` | 19.0.1.8.0 | AGPL-3 | `l10n_ar`, `account_internal_transfer` | UX accounting: tags, fiscal position, transfer report, debit note view | 🟢 leve overlap con nuestro `l10n_ar_trx_edi` |
 
 ---
 
@@ -65,7 +65,7 @@ Los 4 módulos que adhoc reimplementa porque sólo existen en Odoo Enterprise:
 | Módulo | Versión | Licencia | Estado | Propósito | Vs. nuestro proyecto |
 |---|---|---|---|---|---|
 | `l10n_ar_afipws` | 18.0.1.0.0 | AGPL-3 | ⚠️ `installable=False` | Cliente WS AFIP base usando `pyafipws` (Mariano Reingart). Certificados, conexiones, autenticación WSAA. | ❌ Nosotros tenemos `l10n_ar_afip_ws` propio (no `pyafipws`, requests directo) |
-| `l10n_ar_afipws_fe` | 18.0.2.0.0 | AGPL-3 | ⚠️ `installable=False` | Factura electrónica AFIP usando `pyafipws`. WSFE/WSFEX/WSCDC. | ❌ Nosotros tenemos `l10n_ar_edi` propio (Odoo CE 19) + nuestros `l10n_ar_afip_ws` |
+| `l10n_ar_afipws_fe` | 18.0.2.0.0 | AGPL-3 | ⚠️ `installable=False` | Factura electrónica AFIP usando `pyafipws`. WSFE/WSFEX/WSCDC. | ❌ Nosotros tenemos `l10n_ar_trx_edi` propio (Odoo CE 19) + nuestros `l10n_ar_afip_ws` |
 | `l10n_ar_pos_afipws_fe` | — | AGPL-3 | ❓ probable installable=False | POS + factura electrónica AFIP por `pyafipws` | ❌ no lo necesitamos |
 | `l10n_ar_reports` | 16.0.1.0.0 | AGPL-3 | ⚠️ `installable=False` | Account VAT report XLSX (versión vieja). Manifest 16.0 sin migrar. | ❌ Nosotros tenemos `l10n_ar_libro_iva_digital` (TXT AFIP) + `l10n_ar_iva_simple` (CSV ARCA) |
 

@@ -112,12 +112,12 @@ Después del 01/06/2026 podemos volver a este doc y:
 ## 6. Cambios aplicados en este commit
 
 ```
-addons/l10n_ar_edi/models/account_move.py
+addons/l10n_ar_trx_edi/models/account_move.py
     + códigos 7 y 16 en el mapping
     + docstring con catálogo completo y notación Cmp_Clase
     + nota deadline 2026-06-01
 
-addons/l10n_ar_edi/lib/payload.py
+addons/l10n_ar_trx_edi/lib/payload.py
     ~ refinada nota sobre el default None y la deadline
 
 addons/l10n_ar_afip_ws/lib/errors.py

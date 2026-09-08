@@ -57,22 +57,22 @@ Odoo Community trae el módulo base `l10n_ar` con el plan de cuentas, tipos de c
                                     │
         ┌───────────────────────────┼─────────────────────────┐
         │                           │                          │
-┌───────▼──────────┐    ┌──────────▼───────┐    ┌────────────▼─────┐
-│ l10n_ar_edi_base │    │  l10n_ar_afip_ws │    │   certificate    │
-│   (campos AFIP)  │    │  (WSAA + WSFE)   │    │ (cert + key)     │
-└────────┬─────────┘    └────────┬─────────┘    └──────────────────┘
-         │                       │
-         └───────────┬───────────┘
-                     │
-            ┌────────▼─────────┐
-            │   l10n_ar_edi    │  Orquestador emisión + QR
-            └────────┬─────────┘
-                     │
-        ┌────────────┼────────────┬────────────┬────────────┐
-        │            │            │            │            │
-   l10n_ar_caea  l10n_ar_pos_edi  Libro IVA   IVA Simple   Mis Cbtes
-   (contingencia)  (POS+FE)       Digital                   (cotejo)
-
+┌───────▼──────────────┐ ┌──────────▼───────┐    ┌────────────▼─────┐
+│ l10n_ar_trx_edi_base │ │  l10n_ar_afip_ws │    │   certificate    │
+│    (campos AFIP)     │ │  (WSAA + WSFE)   │    │ (cert + key)     │
+└──────────┬───────────┘ └────────┬─────────┘    └──────────────────┘
+           │                      │
+           └──────────┬───────────┘
+                      │
+            ┌─────────▼────────┐
+            │  l10n_ar_trx_edi │  Orquestador emisión + QR
+            └─────────┬────────┘
+                      │
+        ┌─────────────┼──────────────┬────────────┬────────────┐
+        │             │              │            │            │
+   l10n_ar_caea  l10n_ar_trx_    Libro IVA   IVA Simple   Mis Cbtes
+   (contingencia)  pos_edi        Digital                   (cotejo)
+                 (POS+FE)
 
               ┌──────────────────────┐
               │  l10n_ar_padron_base │   ← helpers compartidos
@@ -281,7 +281,7 @@ addons_path = /opt/odoo/addons,/opt/odoo/addons/argentina
 # 3. Reiniciar Odoo y actualizar lista de aplicaciones
 sudo systemctl restart odoo
 
-# 4. En Odoo: Apps → buscar "l10n_ar_edi" → Instalar
+# 4. En Odoo: Apps → buscar "l10n_ar_trx_edi" → Instalar
 #    (las dependencias se instalan en cascada)
 
 # 5. Subir certificado AFIP en Configuración → Certificados
@@ -295,20 +295,42 @@ sudo systemctl restart odoo
 
 | Módulo | Versión | Estado |
 |---|---|---|
-| `l10n_ar_edi_base` | 19.0.0.1.1 | ✅ Producción |
-| `l10n_ar_afip_ws` | 19.0.0.5.0 | ✅ Producción |
-| `l10n_ar_edi` | 19.0.0.3.4 | ✅ Producción |
-| `l10n_ar_padron_query` | 19.0.x | ✅ Producción |
-| `l10n_ar_libro_iva_digital` | 19.0.x | ✅ Producción |
-| `l10n_ar_iva_simple` | 19.0.x | ✅ Producción |
-| `l10n_ar_pos_edi` | 19.0.x | ✅ Producción |
-| `l10n_ar_caea` | 19.0.1.2.0 | ✅ Producción |
-| `l10n_ar_mis_comprobantes` | 19.0.2.0.0 | ✅ Producción |
-| `l10n_ar_iibb_percepciones` | 19.0.1.1.0 | ✅ Producción + ARBA WS |
+| `l10n_ar_trx_edi_base` | 19.0.0.4.0 | ✅ Producción |
+| `l10n_ar_afip_ws` | 19.0.0.7.2 | ✅ Producción |
+| `l10n_ar_trx_edi` | 19.0.0.8.0 | ✅ Producción |
+| `l10n_ar_padron_query` | 19.0.0.1.1 | ✅ Producción |
+| `l10n_ar_libro_iva_digital` | 19.0.0.2.1 | ✅ Producción |
+| `l10n_ar_iva_simple` | 19.0.0.2.0 | ✅ Producción |
+| `l10n_ar_trx_pos_edi` | 19.0.0.2.0 | ✅ Producción |
+| `l10n_ar_caea` | 19.0.2.0.1 | ✅ Producción |
+| `l10n_ar_mis_comprobantes` | 19.0.2.0.2 | ✅ Producción |
+| `l10n_ar_iibb_percepciones` | 19.0.1.1.2 | ✅ Producción + ARBA WS |
 | `l10n_ar_padron_base` | 19.0.1.0.0 | ✅ Implementado |
 | `l10n_ar_padron_caba` | 19.0.1.3.0 | ✅ Implementado |
 | `l10n_ar_padron_santafe` | 19.0.1.3.0 | ✅ Implementado |
 | `l10n_ar_padron_cordoba` | 19.0.1.3.0 | ✅ Implementado |
+
+### ⚠️ Renombrado de módulos (septiembre 2026)
+
+Tres módulos cambiaron de nombre técnico para no confundirse con el módulo
+`l10n_ar_edi` de **Odoo Enterprise** (mismo nombre, producto distinto):
+
+| Nombre anterior | Nombre nuevo |
+|---|---|
+| `l10n_ar_edi` | `l10n_ar_trx_edi` |
+| `l10n_ar_edi_base` | `l10n_ar_trx_edi_base` |
+| `l10n_ar_pos_edi` | `l10n_ar_trx_pos_edi` |
+
+El resto de los módulos no cambia de nombre (sólo actualizan su `depends`).
+
+**Instalación nueva:** no hay nada que hacer, instalar `l10n_ar_trx_edi`.
+
+**Base que ya tenía instalados los nombres anteriores:** Odoo no renombra
+módulos instalados solo; hay que migrar la base UNA vez antes de arrancar con
+el código nuevo. Está resuelto en [`docs/migracion_rename_trx.md`](docs/migracion_rename_trx.md)
+con el script [`docs/rename_trx_modules.sql`](docs/rename_trx_modules.sql).
+Resumen: backup → Odoo detenido → correr el SQL → código nuevo →
+arrancar con `-u l10n_ar_trx_edi_base`.
 
 ### Backlog (sin demanda actual)
 

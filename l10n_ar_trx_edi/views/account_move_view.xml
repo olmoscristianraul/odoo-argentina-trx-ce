@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Part of l10n-ar-edi-community. See LICENSE file for full copyright and licensing details. -->
+<odoo>
+    <!--
+        Extiende el form view de `account.move` para:
+
+        1. Botón "Enviar a ARCA" en el header (visible cuando el move está
+           posted, no tiene CAE todavía y el journal está configurado para
+           WSFEv1). Útil cuando `_post` falla por timeout/red y queda el
+           move posted sin CAE — el operador re-dispara la emisión.
+
+        2. Botón "Reintentar ARCA" cuando el move está rechazado (R).
+
+        3. Tab "AFIP" con CAE, vto, modo, resultado, observaciones,
+           QR (preview) y XML req/resp (acceso restringido a Account
+           Manager por privacidad de los datos del partner).
+    -->
+    <record id="view_move_form_l10n_ar_edi" model="ir.ui.view">
+        <field name="name">account.move.form.l10n_ar_trx_edi</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+
+            <!--
+                1) Para facturas electrónicas AR ocultamos los botones
+                   `action_post` estándar de Odoo. ¡OJO!: en el view
+                   combinado de account.move HAY DOS botones con
+                   name="action_post" (uno "Publicar" y otro "Confirmar")
+                   y un `<button name="action_post" position="attributes">`
+                   solo afecta al primero. Por eso usamos `<xpath>` con
+                   índice para tocar cada uno por separado, conservando
+                   sus expresiones `invisible` originales (que pueden
+                   incluir hide_post_button, move_type=='entry', etc.)
+                   vía `add` con separator " or ".
+            -->
+            <xpath expr="(//button[@name='action_post'])[1]" position="attributes">
+                <attribute name="invisible" add="l10n_ar_is_electronic_invoice" separator=" or "/>
+            </xpath>
+            <xpath expr="(//button[@name='action_post'])[2]" position="attributes">
+                <attribute name="invisible" add="l10n_ar_is_electronic_invoice" separator=" or "/>
+            </xpath>
+
+            <!--
+                2) "Restablecer a borrador" no se permite cuando el move
+                   ya tiene CAE: legalmente una factura electrónica
+                   emitida no se anula volviéndola a borrador, se
+                   contracara con una NC. Si la factura quedó posted
+                   SIN CAE (error en la emisión), sí se puede volver a
+                   draft para corregir y reintentar.
+            -->
+            <button name="button_draft" position="attributes">
+                <attribute name="invisible">state != 'posted' or l10n_ar_afip_auth_code</attribute>
+            </button>
+
+            <!--
+                3) Botón "Validar en AFIP/ARCA" — sólo en draft, y sólo
+                   para journals electrónicos AR. El field
+                   `l10n_ar_is_electronic_invoice` debe estar presente
+                   como <field invisible="1"/> abajo, sino las expresiones
+                   de los `invisible` se evalúan como False.
+            -->
+            <xpath expr="//header" position="inside">
+                <field name="l10n_ar_is_electronic_invoice" invisible="1"/>
+                <field name="l10n_ar_supplier_validation_available" invisible="1"/>
+
+                <button name="action_l10n_ar_validar_arca"
+                        type="object"
+                        string="Validar en AFIP/ARCA"
+                        class="oe_highlight"
+                        data-hotkey="v"
+                        invisible="state != 'draft' or not l10n_ar_is_electronic_invoice"
+                        groups="account.group_account_invoice"/>
+
+                <!-- 4) Reintento manual unificado: cubre los dos casos
+                        de fallo — posted SIN CAE (timeout/red durante
+                        emisión) y posted CON Resultado='R' (rechazado
+                        por AFIP). Ahora llama a action_l10n_ar_retry_post_cae
+                        que pasa a draft + repostea — más robusto que solo
+                        pedir CAE, porque también recalcula compute fields
+                        que pudieron faltar (l10n_latam_document_type_id si
+                        el partner no tenía categoría fiscal). -->
+                <button name="action_l10n_ar_retry_post_cae"
+                        type="object"
+                        string="Reintentar AFIP/ARCA"
+                        class="btn-warning"
+                        confirm="¿Reintentar la emisión AFIP? La factura se pasa a borrador y se vuelve a postear para pedir CAE. Si AFIP sigue rechazando, queda en draft con el error en el chatter."
+                        invisible="state != 'posted'
+                                   or not l10n_ar_is_electronic_invoice
+                                   or (l10n_ar_afip_auth_code and l10n_ar_afip_result != 'R')"
+                        groups="account.group_account_invoice"/>
+
+                <!-- 5) "Constatar en ARCA" — solo en facturas IN con
+                        CAE/CAI/CAEA y la company con la feature WSCDC
+                        habilitada (Disponible o Requerido). -->
+                <button name="action_l10n_ar_constatar_arca"
+                        type="object"
+                        string="Constatar en ARCA"
+                        class="btn-secondary"
+                        invisible="not l10n_ar_supplier_validation_available"
+                        groups="account.group_account_invoice"/>
+            </xpath>
+
+            <!-- Tab "AFIP" en el notebook -->
+            <xpath expr="//notebook" position="inside">
+                <page string="AFIP"
+                      name="l10n_ar_afip"
+                      invisible="not l10n_ar_is_electronic_invoice and not l10n_ar_supplier_validation_available">
+                    <group invisible="not l10n_ar_is_electronic_invoice">
+                        <group string="Autorización">
+                            <field name="l10n_ar_afip_result"
+                                   readonly="1"
+                                   widget="badge"
+                                   decoration-success="l10n_ar_afip_result == 'A'"
+                                   decoration-warning="l10n_ar_afip_result == 'O'"
+                                   decoration-danger="l10n_ar_afip_result == 'R'"/>
+                            <field name="l10n_ar_afip_auth_mode" readonly="1"/>
+                            <field name="l10n_ar_afip_auth_code" readonly="1"/>
+                            <field name="l10n_ar_afip_auth_code_due" readonly="1"/>
+                        </group>
+                        <group string="Datos del comprobante">
+                            <field name="l10n_ar_afip_concept" readonly="1"
+                                   invisible="not l10n_ar_afip_concept"/>
+                            <field name="l10n_ar_afip_service_start" readonly="1"
+                                   invisible="l10n_ar_afip_concept not in ('2', '3', '4')"/>
+                            <field name="l10n_ar_afip_service_end" readonly="1"
+                                   invisible="l10n_ar_afip_concept not in ('2', '3', '4')"/>
+                        </group>
+                    </group>
+
+                    <!-- Política RG 5616 — solo cuando moneda != ARS empresa -->
+                    <group string="Pago en moneda extranjera (RG 5616)"
+                           invisible="not l10n_ar_payment_foreign_currency">
+                        <field name="l10n_ar_payment_foreign_currency"
+                               widget="radio"/>
+                    </group>
+
+                    <!-- FCE MiPyME (sólo cuando es FCE) -->
+                    <group string="FCE MiPyME (RG 4919/2021)"
+                           invisible="not l10n_ar_is_mipyme_fce">
+                        <field name="l10n_ar_is_mipyme_fce" invisible="1"/>
+                        <field name="l10n_ar_fce_transmission_type"
+                               widget="radio"/>
+                        <field name="l10n_ar_afip_fce_is_cancellation"
+                               invisible="not l10n_ar_is_mipyme_fce or move_type not in ('out_refund', 'in_refund')"/>
+                    </group>
+
+                    <!-- Constatación WSCDC (sólo facturas IN con feature habilitada) -->
+                    <group string="Constatación ARCA (WSCDC)"
+                           invisible="not l10n_ar_supplier_validation_available">
+                        <group>
+                            <field name="l10n_ar_afip_verification_result"
+                                   readonly="1"
+                                   widget="badge"
+                                   decoration-success="l10n_ar_afip_verification_result == 'A'"
+                                   decoration-warning="l10n_ar_afip_verification_result == 'O'"
+                                   decoration-danger="l10n_ar_afip_verification_result == 'R'"/>
+                            <field name="l10n_ar_afip_verification_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="l10n_ar_afip_verification_observations"
+                                   readonly="1"
+                                   widget="text"
+                                   invisible="not l10n_ar_afip_verification_observations"/>
+                        </group>
+                    </group>
+
+                    <!-- Observaciones AFIP (resultado=O o eventos informativos) -->
+                    <group string="Observaciones AFIP"
+                           invisible="not l10n_ar_afip_observations">
+                        <field name="l10n_ar_afip_observations"
+                               nolabel="1"
+                               readonly="1"
+                               widget="text"/>
+                    </group>
+
+                    <!-- QR — solo preview, el campo ya viene como URL completa. -->
+                    <group string="QR de validación"
+                           invisible="not l10n_ar_afip_qr_code">
+                        <field name="l10n_ar_afip_qr_code"
+                               nolabel="1"
+                               readonly="1"
+                               widget="url"/>
+                    </group>
+
+                    <!-- XML req/resp — solo Account Manager, para forensic. -->
+                    <group string="XML enviado / recibido (auditoría)"
+                           groups="account.group_account_manager">
+                        <field name="l10n_ar_afip_xml_request"
+                               readonly="1"
+                               widget="text"
+                               invisible="not l10n_ar_afip_xml_request"/>
+                        <field name="l10n_ar_afip_xml_response"
+                               readonly="1"
+                               widget="text"
+                               invisible="not l10n_ar_afip_xml_response"/>
+                        <field name="l10n_ar_afip_verification_xml_request"
+                               readonly="1"
+                               widget="text"
+                               invisible="not l10n_ar_afip_verification_xml_request"/>
+                        <field name="l10n_ar_afip_verification_xml_response"
+                               readonly="1"
+                               widget="text"
+                               invisible="not l10n_ar_afip_verification_xml_response"/>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

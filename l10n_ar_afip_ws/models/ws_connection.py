@@ -271,7 +271,7 @@ class L10nArAfipWsConnection(models.Model):
         """Devuelve el `certificate.certificate` a usar para esta conexión.
 
         Busca el cert configurado en la compañía. Si no hay, error claro.
-        La relación company → certificate la define `l10n_ar_edi_base`
+        La relación company → certificate la define `l10n_ar_trx_edi_base`
         (campo `l10n_ar_afip_ws_environment` + `l10n_ar_afip_ws_cert_id`).
         """
         self.ensure_one()
